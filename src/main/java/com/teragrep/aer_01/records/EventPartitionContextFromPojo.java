@@ -43,20 +43,46 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
+package com.teragrep.aer_01.records;
 
-package com.teragrep.aer_01.fakes;
+import com.azure.messaging.eventhubs.models.PartitionContext;
+import com.teragrep.akv_01.event.metadata.partitionContext.EventPartitionContext;
 
-import com.teragrep.aer_01.Output;
-import com.teragrep.rlp_01.RelpBatch;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
-public final class OutputFake implements Output {
+public final class EventPartitionContextFromPojo implements EventPartitionContext {
+    private final PartitionContext partitionContext;
+    public EventPartitionContextFromPojo(final PartitionContext partitionContext) {
+        this.partitionContext = partitionContext;
+    }
     @Override
-    public void close() {
-        // No functionality for a fake
+    public Map<String, Object> asMap() {
+        final Map<String, Object> m = new HashMap<>();
+        m.put("FullyQualifiedNamespace", partitionContext.getFullyQualifiedNamespace());
+        m.put("EventHubName",  partitionContext.getEventHubName());
+        m.put("PartitionId", partitionContext.getPartitionId());
+        m.put("ConsumerGroup", partitionContext.getConsumerGroup());
+        return m;
     }
 
     @Override
-    public void accept(final RelpBatch batch) {
-        // No functionality for a fake
+    public boolean isStub() {
+        return false;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final EventPartitionContextFromPojo that = (EventPartitionContextFromPojo) o;
+        return Objects.equals(partitionContext, that.partitionContext);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(partitionContext);
     }
 }

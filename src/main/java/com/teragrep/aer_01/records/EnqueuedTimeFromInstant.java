@@ -43,20 +43,43 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
+package com.teragrep.aer_01.records;
 
-package com.teragrep.aer_01.fakes;
+import com.teragrep.akv_01.event.metadata.time.EnqueuedTime;
 
-import com.teragrep.aer_01.Output;
-import com.teragrep.rlp_01.RelpBatch;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Objects;
 
-public final class OutputFake implements Output {
-    @Override
-    public void close() {
-        // No functionality for a fake
+public final class EnqueuedTimeFromInstant implements EnqueuedTime {
+    private final Instant instant;
+
+    public EnqueuedTimeFromInstant(final Instant instant) {
+        this.instant = instant;
     }
 
     @Override
-    public void accept(final RelpBatch batch) {
-        // No functionality for a fake
+    public ZonedDateTime zonedDateTime() {
+        return instant.atZone(ZoneId.of("UTC"));
+    }
+
+    @Override
+    public boolean isStub() {
+        return false;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final EnqueuedTimeFromInstant that = (EnqueuedTimeFromInstant) o;
+        return Objects.equals(instant, that.instant);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(instant);
     }
 }

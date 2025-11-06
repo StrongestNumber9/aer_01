@@ -43,20 +43,39 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.aer_01.fakes;
 
-import com.teragrep.aer_01.Output;
-import com.teragrep.rlp_01.RelpBatch;
+import com.azure.messaging.eventhubs.CheckpointStore;
+import com.azure.messaging.eventhubs.EventData;
+import com.azure.messaging.eventhubs.models.EventBatchContext;
+import com.azure.messaging.eventhubs.models.LastEnqueuedEventProperties;
+import com.azure.messaging.eventhubs.models.PartitionContext;
 
-public final class OutputFake implements Output {
-    @Override
-    public void close() {
-        // No functionality for a fake
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
+public final class FakeEventBatchContextFactoryImpl implements EventBatchContextFactory {
+    private final int batchSize;
+
+    public FakeEventBatchContextFactoryImpl(final int batchSize) {
+        this.batchSize = batchSize;
     }
 
     @Override
-    public void accept(final RelpBatch batch) {
-        // No functionality for a fake
+    public EventBatchContext eventBatchContext() {
+        final List<EventData> eventDataList = new ArrayList<>();
+        final PartitionContext partitionContext = new PartitionContext("namespace", "eventHubName",
+                "consumerGroup", "0");
+        final LastEnqueuedEventProperties lastEnqueuedEventProperties = new LastEnqueuedEventProperties(1L, 100L,
+                Instant.ofEpochSecond(0), Instant.ofEpochSecond(0));
+        final CheckpointStore checkpointStore = new CheckpointStoreFake();
+
+        for (int i = 0; i < batchSize; i++) {
+            final EventData eventData = new EventDataFake();
+            eventDataList.add(eventData);
+        }
+
+        return new EventBatchContext(partitionContext, eventDataList, checkpointStore, lastEnqueuedEventProperties);
     }
 }

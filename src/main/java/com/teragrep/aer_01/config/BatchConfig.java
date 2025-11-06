@@ -43,20 +43,22 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
+package com.teragrep.aer_01.config;
 
-package com.teragrep.aer_01.fakes;
+import com.teragrep.aer_01.config.source.Sourceable;
 
-import com.teragrep.aer_01.Output;
-import com.teragrep.rlp_01.RelpBatch;
+public final class BatchConfig {
+    private final int maxBatchSize;
 
-public final class OutputFake implements Output {
-    @Override
-    public void close() {
-        // No functionality for a fake
+    public BatchConfig(final Sourceable sourceable) {
+        this(Integer.parseInt(sourceable.source("batch.max.size", "1000")));
     }
 
-    @Override
-    public void accept(final RelpBatch batch) {
-        // No functionality for a fake
+    public BatchConfig(final int maxBatchSize) {
+        this.maxBatchSize = maxBatchSize;
+    }
+
+    public int maxBatchSize() {
+        return maxBatchSize;
     }
 }

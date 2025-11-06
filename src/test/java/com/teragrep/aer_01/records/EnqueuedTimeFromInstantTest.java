@@ -43,20 +43,27 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
+package com.teragrep.aer_01.records;
 
-package com.teragrep.aer_01.fakes;
+import com.teragrep.akv_01.event.metadata.time.EnqueuedTime;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import com.teragrep.aer_01.Output;
-import com.teragrep.rlp_01.RelpBatch;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
-public final class OutputFake implements Output {
-    @Override
-    public void close() {
-        // No functionality for a fake
+public final class EnqueuedTimeFromInstantTest {
+    @Test
+    void testEnqueuedTimeFromInstant() {
+        final Instant fromInstant = Instant.ofEpochMilli(1000);
+        final EnqueuedTime et = new EnqueuedTimeFromInstant(fromInstant);
+        Assertions.assertEquals(ZonedDateTime.of(1970,1,1,0,0,1, 0, ZoneId.of("UTC")), et.zonedDateTime());
     }
 
-    @Override
-    public void accept(final RelpBatch batch) {
-        // No functionality for a fake
+    @Test
+    void testEqualsContract() {
+        EqualsVerifier.forClass(EnqueuedTimeFromInstant.class).verify();
     }
 }

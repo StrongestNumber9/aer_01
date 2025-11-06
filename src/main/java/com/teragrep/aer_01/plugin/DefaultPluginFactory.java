@@ -43,20 +43,30 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
+package com.teragrep.aer_01.plugin;
 
-package com.teragrep.aer_01.fakes;
+import com.teragrep.akv_01.plugin.Plugin;
+import com.teragrep.akv_01.plugin.PluginFactory;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 
-import com.teragrep.aer_01.Output;
-import com.teragrep.rlp_01.RelpBatch;
+import java.io.StringReader;
 
-public final class OutputFake implements Output {
+public final class DefaultPluginFactory implements PluginFactory {
+
     @Override
-    public void close() {
-        // No functionality for a fake
-    }
-
-    @Override
-    public void accept(final RelpBatch batch) {
-        // No functionality for a fake
+    public synchronized Plugin plugin(final String json) {
+        final JsonObject jsonObject;
+        try (
+                final StringReader stringReader = new StringReader(json); final JsonReader reader = Json.createReader(stringReader)
+        ) {
+            jsonObject = reader.readObject();
+        }
+        return new DefaultPlugin(
+                jsonObject.getString("realHostname"),
+                jsonObject.getString("syslogHostname"),
+                jsonObject.getString("syslogAppname")
+        );
     }
 }

@@ -43,20 +43,52 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
+package com.teragrep.aer_01.hostname;
 
-package com.teragrep.aer_01.fakes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.teragrep.aer_01.Output;
-import com.teragrep.rlp_01.RelpBatch;
+import java.net.UnknownHostException;
+import java.util.Objects;
 
-public final class OutputFake implements Output {
-    @Override
-    public void close() {
-        // No functionality for a fake
+public final class Hostname {
+
+    private final HostnameSource hostnameSource;
+    private final String defaultHostname;
+    private static final Logger LOGGER = LoggerFactory.getLogger(Hostname.class);
+
+    public Hostname(final String defaultHostname) {
+        this(defaultHostname, new JavaHostnameSource());
+    }
+
+    public Hostname(final String defaultHostname, final HostnameSource hostnameSource) {
+        this.hostnameSource = hostnameSource;
+        this.defaultHostname = defaultHostname;
+    }
+
+    public String hostname() {
+        String hostname;
+        try {
+            hostname = hostnameSource.hostname();
+        }
+        catch (final UnknownHostException e) {
+            hostname = defaultHostname;
+            LOGGER.warn("Could not determine hostname, defaulting to <{}>", defaultHostname, e);
+        }
+        return hostname;
     }
 
     @Override
-    public void accept(final RelpBatch batch) {
-        // No functionality for a fake
+    public boolean equals(final Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final Hostname hostname = (Hostname) o;
+        return Objects.equals(hostnameSource, hostname.hostnameSource) && Objects.equals(defaultHostname, hostname.defaultHostname);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(hostnameSource, defaultHostname);
     }
 }

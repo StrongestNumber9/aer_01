@@ -43,53 +43,82 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
+package com.teragrep.aer_01.plugin;
 
-package com.teragrep.aer_01.fakes;
+import com.teragrep.akv_01.event.ParsedEvent;
+import com.teragrep.akv_01.event.metadata.offset.EventOffset;
+import com.teragrep.akv_01.event.metadata.partitionContext.EventPartitionContext;
+import com.teragrep.akv_01.event.metadata.properties.EventProperties;
+import com.teragrep.akv_01.event.metadata.properties.EventPropertiesImpl;
+import com.teragrep.akv_01.event.metadata.systemProperties.EventSystemProperties;
+import com.teragrep.akv_01.event.metadata.time.EnqueuedTime;
+import jakarta.json.JsonStructure;
 
-import com.teragrep.rlp_01.RelpBatch;
-import com.teragrep.rlp_01.RelpConnection;
+import java.util.HashMap;
+import java.util.Map;
 
-import java.io.IOException;
+public final class ParsedEventWithException implements ParsedEvent {
 
-public class RelpConnectionFake extends RelpConnection {
+    private final ParsedEvent parsedEvent;
+    private final Throwable exception;
 
-    @Override
-    public void setReadTimeout(int readTimeout) {
-        // no-op in fake
+    public ParsedEventWithException(final ParsedEvent parsedEvent, final Throwable exception) {
+        this.parsedEvent = parsedEvent;
+        this.exception = exception;
     }
 
     @Override
-    public void setWriteTimeout(int writeTimeout) {
-        // no-op in fake
+    public JsonStructure asJsonStructure() {
+        return parsedEvent.asJsonStructure();
     }
 
     @Override
-    public void setConnectionTimeout(int timeout) {
-        // no-op in fake
+    public boolean isJsonStructure() {
+        return parsedEvent.isJsonStructure();
     }
 
     @Override
-    public boolean connect(String hostname, int port) throws IOException {
-        return true;
+    public String asString() {
+        return parsedEvent.asString();
     }
 
     @Override
-    public void tearDown() {
-        // no-op in fake
+    public String resourceId() {
+        return parsedEvent.resourceId();
     }
 
     @Override
-    public boolean disconnect() {
-        return true;
+    public EventPartitionContext partitionCtx() {
+        return parsedEvent.partitionCtx();
     }
 
     @Override
-    public void commit(RelpBatch relpBatch) {
-        // remove all the requests from relpBatch in the fake
-        // so that the batch will return true in verifyTransactionAll()
-        while (relpBatch.getWorkQueueLength() > 0) {
-            long reqId = relpBatch.popWorkQueue();
-            relpBatch.removeRequest(reqId);
+    public String payload() {
+        return parsedEvent.payload();
+    }
+
+    @Override
+    public EventProperties properties() {
+        final Map<String, Object> props = new HashMap<>();
+        if (!parsedEvent.properties().isStub()) {
+            props.putAll(parsedEvent.properties().asMap());
         }
+        props.put("aer-01-exception", exception);
+        return new EventPropertiesImpl(props);
+    }
+
+    @Override
+    public EventSystemProperties systemProperties() {
+        return parsedEvent.systemProperties();
+    }
+
+    @Override
+    public EnqueuedTime enqueuedTimeUtc() {
+        return parsedEvent.enqueuedTimeUtc();
+    }
+
+    @Override
+    public EventOffset offset() {
+        return parsedEvent.offset();
     }
 }

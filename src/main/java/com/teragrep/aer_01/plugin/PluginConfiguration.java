@@ -43,20 +43,52 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
+package com.teragrep.aer_01.plugin;
 
-package com.teragrep.aer_01.fakes;
+import com.teragrep.aer_01.config.source.Sourceable;
+import com.teragrep.akv_01.json.JsonFile;
+import com.teragrep.nlf_01.NLFPluginFactory;
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonValue;
 
-import com.teragrep.aer_01.Output;
-import com.teragrep.rlp_01.RelpBatch;
+import java.io.IOException;
+import java.util.Objects;
 
-public final class OutputFake implements Output {
-    @Override
-    public void close() {
-        // No functionality for a fake
+public final class PluginConfiguration {
+
+    private final Sourceable configSource;
+
+    public PluginConfiguration(final Sourceable configSource) {
+        this.configSource = configSource;
+    }
+
+    public JsonStructure asJson() throws IOException {
+        final String configPath = configSource.source("plugins.config.path", "");
+
+        if (configPath.isEmpty()) {
+            return Json
+                    .createObjectBuilder()
+                    .add("defaultPluginFactoryClass", NLFPluginFactory.class.getName())
+                    .add("exceptionPluginFactoryClass", DefaultPluginFactory.class.getName())
+                    .add("resourceIds", JsonValue.EMPTY_JSON_ARRAY)
+                    .build();
+        }
+
+        return new JsonFile(configPath).asJsonStructure();
     }
 
     @Override
-    public void accept(final RelpBatch batch) {
-        // No functionality for a fake
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        PluginConfiguration that = (PluginConfiguration) o;
+        return Objects.equals(configSource, that.configSource);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(configSource);
     }
 }

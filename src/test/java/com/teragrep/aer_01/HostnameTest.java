@@ -43,20 +43,33 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
+package com.teragrep.aer_01;
 
-package com.teragrep.aer_01.fakes;
+import com.teragrep.aer_01.fakes.ThrowingFakeHostnameSource;
+import com.teragrep.aer_01.hostname.Hostname;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import com.teragrep.aer_01.Output;
-import com.teragrep.rlp_01.RelpBatch;
+import java.net.InetAddress;
 
-public final class OutputFake implements Output {
-    @Override
-    public void close() {
-        // No functionality for a fake
+public final class HostnameTest {
+
+    @Test
+    void testHostname() {
+        final Hostname hostname = new Hostname("default");
+        Assertions
+                .assertEquals(Assertions.assertDoesNotThrow(() -> InetAddress.getLocalHost().getHostName()), hostname.hostname());
     }
 
-    @Override
-    public void accept(final RelpBatch batch) {
-        // No functionality for a fake
+    @Test
+    void testDefaultHostname() {
+        final Hostname hostname = new Hostname("default", new ThrowingFakeHostnameSource());
+        Assertions.assertEquals("default", hostname.hostname());
+    }
+
+    @Test
+    void testEqualsContract() {
+        EqualsVerifier.forClass(Hostname.class).verify();
     }
 }

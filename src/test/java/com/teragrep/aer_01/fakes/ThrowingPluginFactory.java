@@ -43,20 +43,15 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.aer_01.fakes;
 
-import com.teragrep.aer_01.Output;
-import com.teragrep.rlp_01.RelpBatch;
+import com.teragrep.akv_01.plugin.Plugin;
+import com.teragrep.akv_01.plugin.PluginFactory;
 
-public final class OutputFake implements Output {
-    @Override
-    public void close() {
-        // No functionality for a fake
-    }
+public final class ThrowingPluginFactory implements PluginFactory {
 
     @Override
-    public void accept(final RelpBatch batch) {
-        // No functionality for a fake
+    public Plugin plugin(final String s) {
+        return new ThrowingPlugin();
     }
 }

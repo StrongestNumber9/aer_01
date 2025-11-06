@@ -43,20 +43,44 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
+package com.teragrep.aer_01.tls;
 
-package com.teragrep.aer_01.fakes;
+import com.azure.security.keyvault.jca.*;
+import com.teragrep.rlp_01.client.SSLContextSupplier;
+import org.apache.hc.core5.ssl.SSLContexts;
 
-import com.teragrep.aer_01.Output;
-import com.teragrep.rlp_01.RelpBatch;
+import javax.net.ssl.SSLContext;
+import java.io.IOException;
+import java.security.*;
+import java.security.cert.CertificateException;
 
-public final class OutputFake implements Output {
+public final class AzureSSLContextSupplier implements SSLContextSupplier {
+
     @Override
-    public void close() {
-        // No functionality for a fake
+    public SSLContext get() {
+        final KeyVaultJcaProvider jca = new KeyVaultJcaProvider();
+        Security.addProvider(jca);
+        final KeyStore keyStore;
+        try {
+            keyStore = KeyVaultKeyStore.getKeyVaultKeyStoreBySystemProperty();
+        }
+        catch (final CertificateException | KeyStoreException | NoSuchAlgorithmException | IOException e) {
+            throw new RuntimeException("Error retrieving KeyStore from KeyVault: ", e);
+        }
+
+        final SSLContext sslContext;
+        try {
+            sslContext = SSLContexts.custom().loadTrustMaterial(keyStore, (chain, authType) -> true).build();
+        }
+        catch (final NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
+            throw new RuntimeException("Error creating SSLContext: ", e);
+        }
+
+        return sslContext;
     }
 
     @Override
-    public void accept(final RelpBatch batch) {
-        // No functionality for a fake
+    public boolean isStub() {
+        return false;
     }
 }
