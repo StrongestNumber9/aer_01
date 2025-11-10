@@ -43,7 +43,6 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.aer_01;
 
 import com.azure.identity.AzureAuthorityHosts;
@@ -90,6 +89,7 @@ import java.util.concurrent.TimeUnit;
 // https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-java-get-started-send?tabs=passwordless%2Croles-azure-portal
 
 public final class Main {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     public static void main(final String[] args) throws Exception {
@@ -132,8 +132,10 @@ public final class Main {
         );
 
         final Map<String, WrappedPluginFactoryWithConfig> pluginFactories = mappedPluginFactories.asUnmodifiableMap();
-        final WrappedPluginFactoryWithConfig defaultPluginFactory = mappedPluginFactories.defaultPluginFactoryWithConfig();
-        final WrappedPluginFactoryWithConfig exceptionPluginFactory = mappedPluginFactories.exceptionPluginFactoryWithConfig();
+        final WrappedPluginFactoryWithConfig defaultPluginFactory = mappedPluginFactories
+                .defaultPluginFactoryWithConfig();
+        final WrappedPluginFactoryWithConfig exceptionPluginFactory = mappedPluginFactories
+                .exceptionPluginFactoryWithConfig();
 
         final Pool<IManagedRelpConnection> relpConnectionPool;
         if (configSource.source("relp.tls.mode", "none").equals("keyVault")) {
@@ -164,7 +166,17 @@ public final class Main {
 
         final DefaultOutput dOutput = new DefaultOutput(relpConnectionPool);
 
-        try (final EventBatchConsumer PARTITION_PROCESSOR = new EventBatchConsumer(new ParsedEventConsumer(dOutput, pluginFactories, defaultPluginFactory, exceptionPluginFactory, metricRegistry))) {
+        try (
+                final EventBatchConsumer PARTITION_PROCESSOR = new EventBatchConsumer(
+                        new ParsedEventConsumer(
+                                dOutput,
+                                pluginFactories,
+                                defaultPluginFactory,
+                                exceptionPluginFactory,
+                                metricRegistry
+                        )
+                )
+        ) {
             final AzureConfig azureConfig = new AzureConfig(configSource);
             final ErrorContextConsumer ERROR_HANDLER = new ErrorContextConsumer();
 
@@ -191,7 +203,6 @@ public final class Main {
                     .credential(credential)
                     .buildEventProcessorClient();
 
-
             eventProcessorClient.start();
 
             Thread.sleep(Long.MAX_VALUE);
@@ -204,7 +215,12 @@ public final class Main {
         }
     }
 
-    private static void startMetrics(JmxReporter jmxReporter, Slf4jReporter slf4jReporter, MetricRegistry metricRegistry, Server jettyServer) {
+    private static void startMetrics(
+            JmxReporter jmxReporter,
+            Slf4jReporter slf4jReporter,
+            MetricRegistry metricRegistry,
+            Server jettyServer
+    ) throws Exception {
         jmxReporter.start();
         slf4jReporter.start(1, TimeUnit.MINUTES);
 
@@ -219,14 +235,8 @@ public final class Main {
         final ServletHolder servletHolder = new ServletHolder(metricsServlet);
         context.addServlet(servletHolder, "/metrics");
 
-        // Start the webserver.
-        try {
-            jettyServer.start();
-        }
-        catch (final Exception e) {
-            LOGGER.error("Starting Jetty server failed", e);
-            throw new RuntimeException("Starting Jetty server failed", e);
-        }
+        jettyServer.start();
+
     }
 
     private static Sourceable getConfigSource() {
